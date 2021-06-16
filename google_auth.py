@@ -92,11 +92,46 @@ service = auth()
 #
 # print(response)
 
-mails_id = get_mails(service)
-change_mail_label(service, mails_id['messages'][1]['id'], 'SPAM')
-for id in mails_id['messages']:
-    tmp = get_message(service, 'me', id['id'])
-    for q in tmp['payload']['parts']:
-        if q['mimeType']=='text/plain':
-            print(base64.b64decode(q['body']['data']))
+def get_filter(service):
+    response = service.users().settings().filters().list(userId='me').execute()
+    result = False
+    return response
+
+
+def check_filter(filter, message):
+    criteria = filter['criteria']
+    action = filter['action']
+    headers = message['payload']['headers']
+    sender = ''
+    subject = ''
+    for h in headers:
+        if h['name']== 'From':
+            sender = h['value']
+        if h['name']=='Subject':
+            subject = h['value']
+    return sender==criteria['from']
+
+
+
+# response = service.users().labels().create(userId='me', body={
+#   "labelListVisibility": "labelShow",
+#   "messageListVisibility": "show",
+#   "name": "filtered"
+# }).execute()
+#
+# print(response)
+
+def get_user_messages_to_classify(service):
+    mails_id = get_mails(service)
+    change_mail_label(service, mails_id['messages'][1]['id'], 'INBOX')
+    for id in mails_id['messages']:
+        tmp = get_message(service, 'me', id['id'])
+        filters = get_filter(service)
+        result = False
+        for f in filters['filter']:
+            result = check_filter(f, tmp)
+        if not result:
+            body = tmp['payload']['parts'][0]['body']['data'].encode("ASCII")
+            body = base64.urlsafe_b64decode(body).decode("utf-8")
+            
 
