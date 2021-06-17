@@ -9,8 +9,8 @@ class DataBase(object):
         try:
             self.connection = connect(
                 host="localhost",
-                user='root',
-                password='Desertod6522',
+                user='',
+                password='',
                 database="notes",
                 port='3306')
         except Error as e:
