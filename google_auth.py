@@ -16,8 +16,8 @@ def create_service(cred):
     creds = Credentials(token=cred['access_token'],
                         refresh_token=cred['refresh_token'],
                         token_uri='https://oauth2.googleapis.com/token',
-                        client_id="43127102122-jj5ljv9ttfemsb938uvd7k3uh0im0i7v.apps.googleusercontent.com",
-                        client_secret="MfbJ48kju5uMEfMQEwcCTSPR",
+                        client_id="",
+                        client_secret="",
                         scopes=['https://www.googleapis.com/auth/gmail.modify'])
     service = build('gmail', 'v1', credentials=creds)
     return service
