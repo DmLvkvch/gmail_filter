@@ -16,14 +16,16 @@ def run():
             service = google_auth.create_service(user)
             try:
                 mails_id = google_auth.get_mails(service)
-                google_auth.change_mail_label(service, mails_id['messages'][1]['id'], 'SPAM')
-                for id in mails_id['messages']:
-                    tmp = google_auth.get_message(service, 'me', id['id'])
-                    for q in tmp['payload']['parts']:
-                        if q['mimeType'] == 'text/plain':
-                            print(base64.b64decode(q['body']['data']))
+                m_id, body = google_auth.get_user_messages_to_classify(service, mails_id)
+                tmp = spam_filter.predict_text(body)
+                label = ''
+                if(tmp < 0.5):
+                    label = 'SPAM'
+                else:
+                    label = 'HAM'
+                google_auth.change_mail_label(service, m_id, label)
             except:
-                print(erro)
+                print("error")
         time.sleep(60.0)
 
 

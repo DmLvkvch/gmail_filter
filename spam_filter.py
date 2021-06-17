@@ -31,7 +31,7 @@ class SpamFilter:
     def get_prediction(self, seq_model, tokenizer, text):
         seq = tokenizer.texts_to_sequences([text])
         seq = pad_sequences(seq, maxlen=100)
-        prediction = seq_model.predict(seq)[0]
+        prediction = seq_model.predict(seq)
         return prediction
 
     def predict_text(self, text):
@@ -40,9 +40,9 @@ class SpamFilter:
     def spam_filter(self):
         labels, texts = dl.load_data_from_file(self.dataset_path)
         word_embeddings = dl.load_word_embeddings_from_file(self.word_emb_path)
-        tokenizer = spamfilter.prepare.get_prepared_tokenizer(texts)
+        tokenizer = prepare.get_prepared_tokenizer(texts)
         self.tokenizer = tokenizer
-        embeddings_matrix = spamfilter.prepare.map_embeddings_to_word_index(
+        embeddings_matrix = prepare.map_embeddings_to_word_index(
             word_embeddings, tokenizer.word_index)
         seq_model = model.get_compiled_model(embeddings_matrix, self.config)
         self.load_weights_from_file('D:\ВКР\spam-filter\checkpoints\weights-improvement-12-0.99.hdf5', seq_model)

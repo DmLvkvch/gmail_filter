@@ -22,6 +22,7 @@ def create_service(cred):
     service = build('gmail', 'v1', credentials=creds)
     return service
 
+
 def auth():
     creds = None
     if os.path.exists('token.pickle'):
@@ -69,10 +70,11 @@ def get_mails(service):
 
 
 def change_mail_label(service, message_id, label):
-    tmp = get_message(service, 'me', message_id)
+    msg = get_message(service, 'me', message_id)
+    labelsId = msg['labelIds']
     if label == 'SPAM':
         body = {
-            "addLabelIds": [label, 'Label_1'],
+            "addLabelIds": ['SPAM', 'Label_1'],
             "removeLabelIds": []
         }
     else:
@@ -82,15 +84,6 @@ def change_mail_label(service, message_id, label):
         }
     response = service.users().messages().modify(userId='me', id=message_id, body=body).execute()
 
-
-service = auth()
-# response = service.users().labels().create(userId='me', body={
-#   "labelListVisibility": "labelShow",
-#   "messageListVisibility": "show",
-#   "name": "filtered"
-# }).execute()
-#
-# print(response)
 
 def get_filter(service):
     response = service.users().settings().filters().list(userId='me').execute()
@@ -105,11 +98,11 @@ def check_filter(filter, message):
     sender = ''
     subject = ''
     for h in headers:
-        if h['name']== 'From':
+        if h['name'] == 'From':
             sender = h['value']
-        if h['name']=='Subject':
+        if h['name'] == 'Subject':
             subject = h['value']
-    return sender==criteria['from']
+    return sender == criteria['from']
 
 
 
@@ -121,9 +114,8 @@ def check_filter(filter, message):
 #
 # print(response)
 
-def get_user_messages_to_classify(service):
-    mails_id = get_mails(service)
-    change_mail_label(service, mails_id['messages'][1]['id'], 'INBOX')
+def get_user_messages_to_classify(service, mails_id):
+    msgs = []
     for id in mails_id['messages']:
         tmp = get_message(service, 'me', id['id'])
         filters = get_filter(service)
@@ -133,5 +125,5 @@ def get_user_messages_to_classify(service):
         if not result:
             body = tmp['payload']['parts'][0]['body']['data'].encode("ASCII")
             body = base64.urlsafe_b64decode(body).decode("utf-8")
-            
-
+            msgs.append((id, body))
+    return msgs
